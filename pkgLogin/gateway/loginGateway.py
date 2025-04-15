@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
 import socket
-import pymysql_new as pymysql
-from pymysql_new.cursors import Cursor
+import pymysql as pymysql
+from pymysql.cursors import Cursor
 import asyncio
 from Crypto.PublicKey import RSA
-from Crypto.Signature import PKCS1_v1_5 as PKCS1_signature
+# from Crypto.Signature import PKCS1_v1_5 as PKCS1_signature
 from Crypto.Cipher import PKCS1_v1_5 as PKCS1_cipher
 import base64
 import json
@@ -18,18 +18,20 @@ import time
 import os
 
 
-def signal_handler(signal, frame):
-    print('You pressed Ctrl+C!')
-    exit(0)
+# def signal_handler(signal, frame):
+#     print('You pressed Ctrl+C!')
+#     exit(0)
 
-DB_IP = '127.0.0.1'
+DB_IP = '120.55.194.144'
 DB_PORT = 3306
 DB_USER = 'game'
-DB_PWD = 'uu5!^jg'
+DB_PWD = '123456'
 SERVER_ADDR = ('0.0.0.0',10086)
-INIT_CERA = 100000
-INIT_CERAPOINT = 100000
-serverList = []
+INIT_CERA = 0
+INIT_CERAPOINT = 0
+serverList = [{
+    'name': '台服',
+               }]
 cfgFile = 'gateway.json'
 if os.path.exists(cfgFile):
     with open(cfgFile,'r',encoding='utf-8') as f:
@@ -224,10 +226,7 @@ def connect_sql():
         db = pymysql.connect(user=DB_USER, password=DB_PWD, host=DB_IP, port=DB_PORT, charset='utf8',connect_timeout=2)
         cur = db.cursor()
     except:
-        import pymysql_old as pymysql
-        from pymysql_old.cursors import Cursor
-        db = pymysql.connect(user=DB_USER, password=DB_PWD, host=DB_IP, port=DB_PORT, charset='utf8',connect_timeout=2)
-        cur = db.cursor()
+        return False
     return True
 
 def loadPEM():
@@ -237,7 +236,7 @@ def loadPEM():
         private_key_ = f.read()                                # 获取私钥
     priKeyTCP = RSA.importKey(private_key_)
 
-    PEMPATH = 'private_key.pem'
+    PEMPATH = 'privatekey.pem'
     with open(PEMPATH, "r") as f:
         private_key_ = f.read()                                # 获取私钥
     priKeyLogin = private_key_.encode()
@@ -485,8 +484,8 @@ def serverStart():
 
 if __name__=='__main__':
     # ctrl_c 
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+    # signal.signal(signal.SIGINT, signal_handler)
+    # signal.signal(signal.SIGTERM, signal_handler)
     logQueue = []
     oldPrint = print
     def log(*text):

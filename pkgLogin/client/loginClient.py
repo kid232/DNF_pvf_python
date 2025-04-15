@@ -16,10 +16,16 @@ import subprocess
 import zlib
 VERSION = 'alpha 0.0.1'
 
-remoteAddr = '192.168.200.131'
-public_key_str = '''-----BEGIN RSA PUBLIC KEY-----
-
------END RSA PUBLIC KEY-----'''
+remoteAddr = '120.55.194.144'
+public_key_str = '''-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqo9vq3sjHGYKoMgIFXud
+nvdAHCa42RW+dwVmU7a/gHURGxfdcQ9GdCgxM09Ced7EAXilY9C9sN8hN5xjlIFI
+qqFwMHzYR9XFnhRk5ZwMptAx1+uuzW+i+03qidpYhgUUXrTWCEViqIIJflHlJ2cW
+amZU5GMOhj+8qHl+Kc/+fj5foscVzfWsM2Tlf9nLsaemmmWhJKsFfb6Vg6IrrLRC
+i4YsbTzweoOJQ7KEhzEor1MSJcmM6vTPCP6Eg78rbFqEg5OqzPWyNDj2qqBYx/DS
+Pkh5Yu7wYaavNUPJ3Bzbd0NbCH9CvBod7UE3olIJC6AYkyk1kjmh3/EiXog2AJvP
+DQIDAQAB
+-----END PUBLIC KEY-----'''
 
 
 import os
@@ -36,7 +42,7 @@ tmpDir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
 abs_pth = os.path.abspath(sys.argv[0])
 workDir = pathlib.Path(os.path.dirname(abs_pth))
 launcherName = '背包测试登录器'
-print(123,workDir)
+
 dllPath = workDir.joinpath('pkglogin.dll')
 if dllPath.exists():
     with open(dllPath,'rb') as f:
@@ -51,7 +57,7 @@ print(remoteAddr)
 
     
 iconPath = 'ico.ico'
-iconPath = tmpDir.joinpath(iconPath)
+# iconPath = tmpDir.joinpath(iconPath)
 public_key = RSA.importKey(public_key_str)
 
 def encryptPkt_client(dataInDict,public_key):
