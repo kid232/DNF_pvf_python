@@ -22,10 +22,10 @@ import os
 #     print('You pressed Ctrl+C!')
 #     exit(0)
 
-DB_IP = '120.55.194.144'
+DB_IP = '127.0.0.1'
 DB_PORT = 3306
 DB_USER = 'game'
-DB_PWD = '123456'
+DB_PWD = 'uu5!^%jg'
 SERVER_ADDR = ('0.0.0.0',10086)
 INIT_CERA = 0
 INIT_CERAPOINT = 0
@@ -304,6 +304,8 @@ def check_mac(macAddr):
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
 banIPDict = {
     'ip':[0,datetime.datetime]
 }
@@ -314,20 +316,29 @@ def login_account(sock,addr=('127.0.0.1',1000),pkgDict:dict={})->dict:
     def cal_token(uid):
         def openssl_private_encrypt(data):
             key = load_pem_private_key(priKeyLogin, None, backend=default_backend())
-            backend = default_backend()
-            length = backend._lib.EVP_PKEY_size(key._evp_pkey)
-            buffer = backend._ffi.new('unsigned char[]', length)
-            result = backend._lib.RSA_private_encrypt(
-                len(data), data, buffer,
-                backend._lib.EVP_PKEY_get1_RSA(key._evp_pkey),
-                backend._lib.RSA_PKCS1_PADDING)
-            backend.openssl_assert(result == length)
-            res = backend._ffi.buffer(buffer)[:]
-            #print(res)
-            return base64.b64encode(backend._ffi.buffer(buffer)[:]).decode()
+            # backend = default_backend()
+            # length = backend._lib.EVP_PKEY_size(key._evp_pkey)
+            # buffer = backend._ffi.new('unsigned char[]', length)
+            # print(f'length:{length}  buffer:{buffer.__sizeof__()}')
+            # result = backend._lib.RSA_private_encrypt(
+            #     len(data), data, buffer,
+            #     backend._lib.EVP_PKEY_get1_RSA(key._evp_pkey),
+            #     backend._lib.RSA_PKCS1_PADDING)
+            # backend.openssl_assert(result == length)
+            # res = backend._ffi.buffer(buffer)[:]
+            # #print(res)
+            # return base64.b64encode(backend._ffi.buffer(buffer)[:]).decode()
+            # 使用私钥加密数据
+            encrypted_data = key.sign(
+                data,
+                padding.PKCS1v15(),  # 使用 PKCS#1 v1.5 填充，与原始代码保持一致
+                hashes.SHA256()      # 指定哈希算法
+            )
+            # 返回 Base64 编码的加密结果
+            return base64.b64encode(encrypted_data).decode()
         data = '%08x010101010101010101010101010101010101010101010101010101010101010155914510010403030101' % uid
         dataInBytes = bytes.fromhex(data)
-        print(f'账号登陆{uid}')
+        print(f'账号登陆{uid} 登录信息 {data}')
         return openssl_private_encrypt(dataInBytes)
     
     def check_uid():
@@ -459,7 +470,7 @@ def handle_client_thread(sock:socket.socket,addr):
                 print(f'未知命令{dataInDict.get("cmd")}，关闭连接{addr}')
                 sock.close()
                 return
-            #print(f'发送数据{responseDict}')
+            print(f'发送数据{responseDict}')
             responseInBytes = base64.b64encode(json.dumps(responseDict).encode())
             sendPkt(sock,responseInBytes)
     except Exception as e:

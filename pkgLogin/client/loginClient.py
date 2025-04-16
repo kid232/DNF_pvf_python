@@ -18,13 +18,13 @@ VERSION = 'alpha 0.0.1'
 
 remoteAddr = '120.55.194.144'
 public_key_str = '''-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqo9vq3sjHGYKoMgIFXud
-nvdAHCa42RW+dwVmU7a/gHURGxfdcQ9GdCgxM09Ced7EAXilY9C9sN8hN5xjlIFI
-qqFwMHzYR9XFnhRk5ZwMptAx1+uuzW+i+03qidpYhgUUXrTWCEViqIIJflHlJ2cW
-amZU5GMOhj+8qHl+Kc/+fj5foscVzfWsM2Tlf9nLsaemmmWhJKsFfb6Vg6IrrLRC
-i4YsbTzweoOJQ7KEhzEor1MSJcmM6vTPCP6Eg78rbFqEg5OqzPWyNDj2qqBYx/DS
-Pkh5Yu7wYaavNUPJ3Bzbd0NbCH9CvBod7UE3olIJC6AYkyk1kjmh3/EiXog2AJvP
-DQIDAQAB
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2Mzieb9pITcA4f8ZlcJ6
+78aFWWwQURecoJCMUdA5Cg5X6w5/umgvWmOgadWeZKTehHn08KIObx7L0x/4Rerk
+ZFYPdigu7fOoJWUle7i3PU2UssyxQa56O5eAQDuQZGSuKKEqUWL7CFpXJUat0kYg
+8/6o3U9goWcu4jGokjrUTsrj0++93mGssPAeB6NY+LOdkVlw4cQKm7EFmxXeMf3g
+dnD461PKP6XnlVaLliA+mlEeGpqUHfQ8S4RlnxGXLP47kgCeU2OA0T1MgRGV8Ppd
+uEI5G65TVZ7y7jQrNJZRj3ofVV0tjB7fNqf/Gj/qyOKBYUWVrZGU2btRHejMVkOn
+IwIDAQAB
 -----END PUBLIC KEY-----'''
 
 
@@ -38,7 +38,7 @@ def print(*args,**kw):
     logFunc[-1](*args,**kw)
 logFunc.append(lambda *args:...)
 
-tmpDir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
+# tmpDir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
 abs_pth = os.path.abspath(sys.argv[0])
 workDir = pathlib.Path(os.path.dirname(abs_pth))
 launcherName = '背包测试登录器'
@@ -57,7 +57,8 @@ print(remoteAddr)
 
     
 iconPath = 'ico.ico'
-# iconPath = tmpDir.joinpath(iconPath)
+#iconPath = tmpDir.joinpath(iconPath)
+iconPath = os.path.join(os.path.dirname(__file__), iconPath)
 public_key = RSA.importKey(public_key_str)
 
 def encryptPkt_client(dataInDict,public_key):
@@ -82,14 +83,15 @@ def send_new(addr,dataBytes,reConnect=True):
         sock = sockDict.get(addr)
         if sock is None:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect(addr)
+            sock.connect((addr,10086))
             sockDict[addr] = sock
         print(dataBytes)
         sendPkt(sock,dataBytes)
-    except:
-        if reConnect:
-            sockDict[addr] = None
-            send_new(addr,dataBytes,False)
+    except Exception as e:
+        messagebox.showinfo('连接失败', f"发生异常：{e} ")
+        # if reConnect:
+        #     sockDict[addr] = Non
+        #     send_new(addr,dataBytes,False)
         
 
 def recv_new(addr):
@@ -123,22 +125,22 @@ def inThread(func):
     return inner
 
 def startDNF(token='',toml=''):
-    tomlName = 'DNF.toml'
-    toml = toml.replace('\r','')
+    # tomlName = 'DNF.toml'
+    # toml = toml.replace('\r','')
     workDirPath = pathlib.Path(workDir)
-    tomlPath = workDirPath.joinpath(tomlName)
-    oldContent = ''
-    if tomlPath.exists():   #记录原始数据
-        with open(tomlPath,'r',encoding='utf-8') as f:
-            oldContent = f.read()
-    with open(tomlPath,'w',encoding='utf-8') as f: #写入新数据
-        f.write(toml)
+    # tomlPath = workDirPath.joinpath(tomlName)
+    # oldContent = ''
+    # if tomlPath.exists():   #记录原始数据
+    #     with open(tomlPath,'r',encoding='utf-8') as f:
+    #         oldContent = f.read()
+    # with open(tomlPath,'w',encoding='utf-8') as f: #写入新数据
+    #     f.write(toml)
     executeFileName = DNF_EXE
     launchCmd = f'"{workDirPath.joinpath(executeFileName)}"  {token}'
     subprocess.Popen(launchCmd,shell=True, cwd=workDirPath)
     time.sleep(5)
-    with open(tomlPath,'w',encoding='utf-8') as f:  #恢复原始数据
-        f.write(oldContent)
+    # with open(tomlPath,'w',encoding='utf-8') as f:  #恢复原始数据
+    #     f.write(oldContent)
     return True
     
 CFG_PATH = 'pkgLauncher.json'
@@ -298,14 +300,14 @@ class LoginuiApp:
                 return
             if responseDict.get('info','')!='':
                 messagebox.showinfo('提示信息',responseDict.get('info'))
-            toml = self.serverList[server].get('toml','')
+            # toml = self.serverList[server].get('toml','')
             self.cfgDict['accountName'] = accountName
             self.cfgDict['pwd'] = pwd
             historyAccountsDict = self.cfgDict.get('historyAccounts',{})
             historyAccountsDict[accountName] = pwd
             self.cfgDict['historyAccounts'] = historyAccountsDict
             self.save_cfg()
-            startDNF(token,toml)
+            startDNF(token)
             self.master.destroy()
             exit()
             quit()
@@ -415,7 +417,7 @@ if __name__ == "__main__":
     elif 'dnf.exe' in filesInParentDir:
         DNF_EXE = 'dnf.exe'
         workDir = workDir.parent
-    else:
-        messagebox.showerror('启动失败','请将程序放置在DNF目录下')
+    # else:
+    #     messagebox.showerror('启动失败','请将程序放置在DNF目录下')
     app.run()
 
